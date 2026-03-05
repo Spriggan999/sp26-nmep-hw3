@@ -118,7 +118,6 @@ def main(config):
     logger.info("Start testing")
     preds = evaluate(config, data_loader_test, model)
     np.save(os.path.join(config.OUTPUT, "preds.npy"), preds)
-    # TODO save predictions to csv in kaggle format
 
 
 def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch):
