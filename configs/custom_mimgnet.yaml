@@ -1,0 +1,20 @@
+BASE: ['custom_base.yaml']
+DATA:
+  BATCH_SIZE: 32 #32
+  DATASET: "medium_imagenet"
+  IMG_SIZE: 128
+  NUM_WORKERS: 32
+  PIN_MEMORY: True
+MODEL:
+  NAME: customnet
+  NUM_CLASSES: 200
+  RESUME: "/home/YSaxephone/sp26-nmep-hw3/output/customnet/ckpt_best.pth"
+TRAIN:
+  EPOCHS: 35
+  WARMUP_EPOCHS: 3
+  LR: 1e-3
+  MIN_LR: 1e-4
+  WARMUP_LR: 1e-4
+OUTPUT: "output/custom_medium_imagenet"
+SAVE_FREQ: 1
+PRINT_FREQ: 500

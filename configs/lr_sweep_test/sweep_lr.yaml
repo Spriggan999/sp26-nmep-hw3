@@ -1,0 +1,28 @@
+command:
+  - python
+  - main.py 
+  - --cfg 
+  - /home/YSaxephone/sp26-nmep-hw3/configs/lr_sweep_test/alexnet_test_lr.yaml
+project: ml@b-hw3-learningrates
+
+method: grid
+
+metric:
+  name: loss
+  goal: minimize
+
+parameters:
+  SWEEP_BUNDLE:
+    values:
+      - LR: 1e-5
+        MIN_LR: 1e-6
+        WARMUP_LR: 1e-6
+      - LR: 3e-4
+        MIN_LR: 3e-5
+        WARMUP_LR: 3e-5
+      - LR: 1e-4
+        MIN_LR: 1e-5
+        WARMUP_LR: 1e-5
+      - LR: 3e-3
+        MIN_LR: 3e-4
+        WARMUP_LR: 3e-4

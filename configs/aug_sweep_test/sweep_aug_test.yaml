@@ -1,0 +1,19 @@
+command:
+  - python
+  - main.py 
+  - --cfg 
+  - /home/YSaxephone/sp26-nmep-hw3/configs/alexnet_base.yaml
+project: ml@b-hw3-learningrates
+
+method: grid
+
+metric:
+  name: loss
+  goal: minimize
+
+parameters:
+  SWEEP_BUNDLE:
+    values:
+      - RAND_AUGMENT: "Identity"
+      - RAND_AUGMENT: "RandomAutoSharpness"
+      - RAND_AUGMENT: "RandomAutoContrast"

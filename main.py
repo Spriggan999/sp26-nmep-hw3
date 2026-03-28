@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import time
+import wandb
 
 import numpy as np
 import torch
@@ -44,6 +45,17 @@ def parse_option():
 
     config = get_config(args)
 
+    run = wandb.init()
+
+    #INSERTED TO ALLOW WEIGHTS&BIASES
+    if wandb.config and 'SWEEP_BUNDLE' in wandb.config:
+        bundle = wandb.config['SWEEP_BUNDLE']
+        config.defrost()
+        # Manually assign the bundled values to the correct YACS keys
+        config.AUG.RAND_AUGMENT = bundle['RAND_AUGMENT']
+        config.freeze()
+        print(f"--- SWEEP ACTIVE: RAND_AUGMENT={config.AUG.RAND_AUGMENT}  ---")
+
     return args, config
 
 
@@ -72,7 +84,7 @@ def main(config):
 
     # Keep it simple with basic epoch scheduler
     optimizer = build_optimizer(config, model)
-    criterion = torch.nn.CrossEntropyLoss()
+    criterion = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
     lr_scheduler = CosineAnnealingLR(optimizer, config.TRAIN.EPOCHS)
 
     max_accuracy = 0.0
@@ -93,6 +105,7 @@ def main(config):
 
         # train_acc1, _ = validate(config, data_loader_train, model)
         val_acc1, val_loss = validate(config, data_loader_val, model)
+
         logger.info(f" * Val Acc {val_acc1:.3f} Val Loss {val_loss:.3f}")
         logger.info(f"Accuracy of the network on the {len(dataset_val)} val images: {val_acc1:.1f}%")
 
@@ -111,6 +124,14 @@ def main(config):
             ) as f:
                 f.write(json.dumps(log_stats) + "\n")
 
+        wandb.log({
+        "epoch": epoch,
+        "train/loss": train_loss,
+        "train/acc": train_acc1,
+        "val/loss": val_loss,
+        "val/acc": val_acc1,
+        })
+
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     logger.info("Training time {}".format(total_time_str))
@@ -118,6 +139,12 @@ def main(config):
     logger.info("Start testing")
     preds = evaluate(config, data_loader_test, model)
     np.save(os.path.join(config.OUTPUT, "preds.npy"), preds)
+
+    wandb.log({
+        "time": (time.time() - start_time), 
+        "throughput": config.DATA.BATCH_SIZE * config.TRAIN.EPOCHS / (time.time() - start_time)
+    })
+
 
 
 def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch):
@@ -159,6 +186,22 @@ def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch):
     )
     epoch_time = time.time() - start
     logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
+
+    """
+    # For weights and biases
+    wandb.log({
+        "train/epoch_loss": loss_meter.avg,
+        "train/epoch_acc": acc1_meter.avg,
+        "train/lr": optimizer.param_groups[0]["lr"],
+        "epoch": epoch
+    }
+    """
+    # For weights and biases
+    wandb.log({
+        "epoch/time": batch_time.avg, 
+        "epoch/throughput": config.DATA.BATCH_SIZE / batch_time.avg
+    })
+
     return acc1_meter.avg, loss_meter.avg
 
 

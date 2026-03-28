@@ -17,7 +17,7 @@ def build_optimizer(config, model):
     elif optimizer_type == "adam":
         optimizer = optim.Adam(parameters, lr=lr, eps=eps, betas=betas)
     elif optimizer_type == "adamw":
-        optimizer = optim.AdamW(parameters, lr=lr, eps=eps, betas=betas)
+        optimizer = optim.AdamW(parameters, lr=lr, eps=eps, betas=betas, weight_decay=0.05)
     else:
         raise NotImplementedError(f"Unknown optimizer: {optimizer_type}")
 

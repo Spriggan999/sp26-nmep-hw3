@@ -1,11 +1,10 @@
 from torch.utils.data import DataLoader
-
 from data.datasets import CIFAR10Dataset, MediumImagenetHDF5Dataset
 
 
 def build_loader(config):
     if config.DATA.DATASET == "cifar10":
-        dataset_train = CIFAR10Dataset(img_size=config.DATA.IMG_SIZE, train=True)
+        dataset_train = CIFAR10Dataset(img_size=config.DATA.IMG_SIZE, train=True, cur_transform=config.AUG.RAND_AUGMENT)
         dataset_val = CIFAR10Dataset(img_size=config.DATA.IMG_SIZE, train=False)
         dataset_test = CIFAR10Dataset(img_size=config.DATA.IMG_SIZE, train=False)
     elif config.DATA.DATASET == "medium_imagenet":
@@ -14,6 +13,7 @@ def build_loader(config):
         dataset_test = MediumImagenetHDF5Dataset(config.DATA.IMG_SIZE, split="test", augment=False)
     else:
         raise NotImplementedError
+
 
     data_loader_train = DataLoader(
         dataset_train,

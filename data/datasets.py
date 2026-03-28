@@ -48,6 +48,8 @@ class MediumImagenetHDF5Dataset(Dataset):
             transform.extend(
                 [
                     transforms.RandomHorizontalFlip(),
+                    transforms.RandomVerticalFlip(),
+                    #transforms.AutoAugment(transforms.AutoAugmentPolicy.IMAGENET),
                     transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4),
                 ]
             )
@@ -55,10 +57,10 @@ class MediumImagenetHDF5Dataset(Dataset):
 
 
 class CIFAR10Dataset(Dataset):
-    def __init__(self, img_size=32, train=True):
+    def __init__(self, img_size=32, train=True, cur_transform='Identity'):
         self.train = train
         self.img_size = img_size
-
+        self.cur_transform = cur_transform
         self.transform = self._get_transforms()
         self.dataset = CIFAR10(root="/data/nmep/cv/cifar10", train=self.train, download=True)
 
@@ -79,10 +81,17 @@ class CIFAR10Dataset(Dataset):
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
                 transforms.Resize([self.img_size] * 2),
             ]
+            if self.cur_transform == 'RandomAutoSharpness':
+                transform.append(transforms.RandomAdjustSharpness(sharpness_factor=2, p=0.5))
+            elif self.cur_transform == 'RandomAutoContrast':
+                transform.append(transforms.RandomAutocontrast(p=0.5))
+            else:
+                pass
         else:
             transform = [
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
                 transforms.Resize([self.img_size] * 2),
             ]
+
         return transforms.Compose(transform)
